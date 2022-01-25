@@ -1,17 +1,17 @@
 ---
 title: "Deployment instructions"
-date: 2021-12-01
+date: 2022-01-20
 draft: false
 weight: 01
 ---
-Karsten Held, Samuel Gross, 01.12.2021
+Karsten Held, Samuel Gross, 20.01.2022
 
 
 ### 1) Download
 
 - Download the zipped web part package file **url-shortener-and-redirector-webpart.sppkg** from GitHub:
 {{< rawhtml >}}
-    <a style="align-self: flex-start;" href="https://github.com/WhizzyApps/SPO-URL-Shortener-And-Redirector-Web-Part/releases">Latest release/</a>
+    <a style="align-self: flex-start;" href="https://github.com/WhizzyApps/SPO-URL-Shortener-And-Redirector-Web-Part/releases/download/ReleaseV1.0.0/SharePoint-Package_sppkg.zip">Latest release/</a>
     <a style="align-self: flex-start;" href="https://github.com/WhizzyApps/SPO-URL-Shortener-And-Redirector-Web-Part/releases" target="_blank">All releases</a>
 {{</ rawhtml >}}
 - Unzip the SPPKG file. Do not rename this file. The filename has to match the package name.
@@ -93,17 +93,17 @@ Karsten Held, Samuel Gross, 01.12.2021
 
 On first deployment, you need to create and set a lookup list.
 
-1. Click "Edit" to edit web part properties. The "Property pane" will blend in on the right.
+1. Click "Edit" to edit web part properties. The "Property pane" will appear to the right.
 2. To create a new list, enter the desired name.
 3. Click "Create".
-4. A Message appears that the list was created successfully. Click "OK".
+4. A message appears that the list was created successfully. Click "OK".
 
 ![](/Deployment/images/13.png)
 
 Set the lookup list:
 
 1. Select the list from the dropdown menu
-2. The web part will be enabled immediately.
+2. The web part is now ready to be used.
 3. Click "Republish".
 
 ![](/Deployment/images/14.png)

@@ -1,11 +1,7 @@
-baseURL = "https://www.sharepoint-permission-center.com/"
+baseURL = "https://sharepoint-url-shortener.com/"
 languageCode = "en-us"
-title = "PermissionCenterWebpart Documentation"
+title = "SharePoint-URL-Shortener-Webpart Documentation"
 theme = "Learn"
-
-[params]
-  themeVariant = "whizzy"
-
 
 [outputs]
     home = [ "HTML", "RSS", "JSON"]

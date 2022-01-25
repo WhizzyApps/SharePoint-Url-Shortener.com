@@ -1,10 +1,10 @@
 ---
 title: "API endpoints"
-date: 2022-01-10
+date: 2022-01-20
 draft: false
 weight: 02
 ---
-Karsten Held, Samuel Gross, 10.01.2022
+Karsten Held, Samuel Gross, 20.01.2022
 
 **Where does the data come from?**
 
@@ -49,9 +49,33 @@ export interface IUrlShortenerProps {
     context: WebPartContext;
 }
 ```
-- Then you can access the spHttpClient in the UrlShortener.tsx file within the web part props: `this.props.context.spHttpClient`, see below:
+- Then you can access the spHttpClient in the UrlShortenerWebPart.ts file within the web part props: `this.context.spHttpClient`, see below:
 
 #### Example for API calls
+
+Example function for Typescript-React in UrlShortenerWebPart.ts file:
+
+``` 
+import { SPHttpClient, ISPHttpClientOptions} from '@microsoft/sp-http';
+
+export default class UrlShortenerWebPart extends BaseClientSideWebPart<IUrlShortenerWebPartProps> 
+{
+    // function for API call
+    private async _spApiGet (url: string): Promise<object> 
+    {
+        const clientOptions: ISPHttpClientOptions = {
+            headers: new Headers(),
+            method: 'GET',
+            mode: 'cors'
+        };
+        const response = await this.context.spHttpClient.get(this.context.pageContext.web.absoluteUrl + url, SPHttpClient.configurations.v1, clientOptions);
+        const responseJson = await response.json();
+        return responseJson;
+    }
+}
+``` 
+
+- The function is the same in a .tsx file like in the .ts file from above. The only difference is the access to the context. In the .ts file you use `this.context`. In the .tsx file you use `this.props.context`.
 
 Example function for Typescript-React in UrlShortener.tsx file:
 ``` 
@@ -78,7 +102,7 @@ export default class SpoUrlShortener extends React.Component<IUrlShortenerProps,
 Call _spApiGet(url) from another function with the parameter "url":
 
 ```
-public async componentDidMount() {
+public async myFunction() {
   const url = "/_api/web/currentuser/isSiteAdmin";
   const response = await this._spApiGet(url);
   console.log(response);
@@ -102,9 +126,18 @@ Get lists of site
 
 - `[SITE_URL]/_api/web/lists`
 
+Get specific list of site
+
+- `[SITE_URL]/_api/web/lists/GetById('[LIST_ID]')`
+
+Get items of list
+
+- `[SITE_URL]/_api/web/lists/GetById('[LIST_ID]')/items`
+
 Get fields of list
 
-- `[SITE_URL]/_api/web/lists/GetById('[YOUR_LIST]')/fields`
+- `[SITE_URL]/_api/web/lists/GetById('[LIST_ID]')/fields`
+
 
 
 ### B) SharePoint API **post** requests
@@ -116,6 +149,8 @@ Get fields of list
 Example function for Typescript-React in UrlShortenerWebPart.ts file:
 
 ``` 
+import { SPHttpClient, ISPHttpClientOptions} from '@microsoft/sp-http';
+
 export default class UrlShortenerWebPart extends BaseClientSideWebPart<IUrlShortenerWebPartProps> 
 {
     private async _spApiPost (url: string, data): Promise<object> 
@@ -130,6 +165,33 @@ export default class UrlShortenerWebPart extends BaseClientSideWebPart<IUrlShort
             mode: 'cors'
         };
         const response = await this.context.spHttpClient.post(this.context.pageContext.web.absoluteUrl + url, SPHttpClient.configurations.v1, clientOptions);
+        const responseJson = await response.json();
+        return responseJson;
+    }
+}
+``` 
+
+- The function is the same in a .tsx file like in the .ts file from above. The only difference is the access to the context. In the .ts file you use `this.context`. In the .tsx file you use `this.props.context`.
+
+Example function for Typescript-React in UrlShortener.tsx file:
+
+``` 
+import { SPHttpClient, ISPHttpClientOptions} from '@microsoft/sp-http';
+
+export default class SpoUrlShortener extends React.Component<IUrlShortenerProps, {}> 
+{
+    private async _spApiPost (url: string, data): Promise<object> 
+    {
+        const clientOptions: ISPHttpClientOptions = {
+            headers: {
+                'Accept': 'application/json;odata=nometadata',
+                'Content-type': 'application/json;odata=verbose',
+                'odata-version': '',
+            },
+            body: data,
+            mode: 'cors'
+        };
+        const response = await this.props.context.spHttpClient.post(this.props.context.pageContext.web.absoluteUrl + url, SPHttpClient.configurations.v1, clientOptions);
         const responseJson = await response.json();
         return responseJson;
     }
@@ -169,10 +231,10 @@ export default class UrlShortenerWebPart extends BaseClientSideWebPart<IUrlShort
 Call _createList(name) from another function with the parameter "name".
 
 ```
-public async componentDidMount() 
+public async myFunction() 
 {
-    const createListResonse = await this._createList ("MyListName");
-    console.log(createListResonse);
+    const response = await this._createList ("MyListName");
+    console.log(response);
 }
 ```
 
@@ -193,8 +255,8 @@ export default class UrlShortenerWebPart extends BaseClientSideWebPart<IUrlShort
     // function to create field
     private async _createListField (listName:String, FieldName:String, FieldType:number, EnforceUniqueValues:boolean) 
     {
-        const urlCreateField = `/_api/web/lists/GetByTitle('${listName}')/Fields`;
-        const dataCreateField = JSON.stringify({
+        const url = `/_api/web/lists/GetByTitle('${listName}')/Fields`;
+        const data = JSON.stringify({
             '__metadata': { 'type': "SP.Field" },
             "Title": FieldName,
             "StaticName": FieldName,
@@ -203,7 +265,7 @@ export default class UrlShortenerWebPart extends BaseClientSideWebPart<IUrlShort
             "EnforceUniqueValues": EnforceUniqueValues,
             "Indexed": EnforceUniqueValues,
         });
-        const responseCreateField = await this._spApiPost(urlCreateField, dataCreateField);
+        return await this._spApiPost(url, data);
     }
 }
 ```
@@ -211,10 +273,10 @@ export default class UrlShortenerWebPart extends BaseClientSideWebPart<IUrlShort
 Call _createListField(listName, FieldName, FieldType, EnforceUniqueValues) from another function with the parameters.
 
 ```
-public async componentDidMount() 
+public async myFunction() 
 {
-    const createListFieldResonse = await this._createListField("MyListName", "Key", 2, true);
-    console.log(createListFieldResonse);
+    const response = await this._createListField("MyListName", "Key", 2, true);
+    console.log(response);
 }
 ```
 
@@ -236,9 +298,9 @@ export default class UrlShortenerWebPart extends BaseClientSideWebPart<IUrlShort
     private async _addFieldToView (listName:String, FieldName:String) 
     {
         // add Field to view
-        const urlAddFieldToView = `/_api/web/lists/GetByTitle('${listName}')/Views/GetByTitle('All%20Items')/ViewFields/addViewField('${FieldName}')`;
-        const responseAddFieldToView = await this._spApiPost(urlAddFieldToView, "");
-        return responseAddFieldToView;
+        const url = `/_api/web/lists/GetByTitle('${listName}')/Views/GetByTitle('All%20Items')/ViewFields/addViewField('${FieldName}')`;
+        const response = await this._spApiPost(url, "");
+        return response;
     }
 }
 ```
@@ -246,9 +308,61 @@ export default class UrlShortenerWebPart extends BaseClientSideWebPart<IUrlShort
 Call _addFieldToView(listName, FieldName) from another function with the parameters.
 
 ```
+public async myFunction() 
+{
+    const response = await this._addFieldToView ("MyListName", "MyFieldName");
+    console.log(response);
+}
+```
+
+#### Create a list item
+
+- Create a list item by calling "_spApiPost(url, data)".
+- "url": `7_api/web/lists/GetById('[LIST_ID]')/items` 
+- "data" contains the following properties: "type", "Title", "Key", "Url".
+- Get the type of the list by api call: `this._spApiGet(url`) 
+- with url: `/_api/web/lists/GetByTitle('${[LIST_NAME]}')?$select=ListItemEntityTypeFullName`
+- "Title" and "Key" are in our case the same: the Id of the shortened URL.
+- "Url" is in our case the target URL.
+
+Example function for Typescript-React in UrlShortener.tsx file:
+
+``` 
+import { SPHttpClient, ISPHttpClientOptions} from '@microsoft/sp-http';
+
+// main class in UrlShortener.tsx file
+export default class SpoUrlShortener extends React.Component<IUrlShortenerProps, {}> 
+{
+    // function to create list item
+    private async _createListItem (listName:String, key:String, inputUrl:String) 
+    {
+        // get list type
+        let getListResponse = await this._spApiGet(`/_api/web/lists/GetByTitle('${listName}')?$select=ListItemEntityTypeFullName`); 
+        let type = getListResponse["ListItemEntityTypeFullName"];
+        
+        // post list item
+        const url = `/_api/web/lists/GetByTitle('${listName}')/items`;
+        const data = JSON.stringify({
+            '__metadata': { 'type': type },
+            "Title": key,
+            "Key": key,/* 
+            "TargetUrl": 
+            {
+                '__metadata': { 'type': 'SP.FieldUrlValue' },
+                'Url': inputUrl,
+            }, */
+        });
+        return await this._spApiPost(url, data);
+    }
+}
+```
+
+Call _createListItem(listName, type, key, inputUrl) from another function with the parameters.
+
+```
 public async componentDidMount() 
 {
-    const addFieldResonse = await this._addFieldToView ("MyListName", "MFieldName");
-    console.log(addFieldResonse);
+    const response = await this._createListItem("MyListName", "123abc", "https://google.com");
+    console.log(response);
 }
 ```
